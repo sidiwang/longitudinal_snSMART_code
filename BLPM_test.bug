@@ -1,0 +1,167 @@
+# Bayesian Longitudinal Piecewise Model
+
+# Sidi Wang
+# Dec, 2023
+
+
+
+model {
+ 
+ # External Control
+ 
+   # Priors for fixed effects
+  beta_baseline_ext ~ dnorm(0, 1) # Prior for the fixed baseline NSAA 
+  beta_age_ext ~ dnorm(0, 1) # Prior for the fixed age effect
+  
+  # Priors for hyperparameters of random effects
+  sigma_b0_ext ~ dunif(0, 1) #dnorm(0, 1) T(0,) # Prior for the standard deviation of random intercepts
+  sigma_b1_ext ~ dunif(0, 1) #dnorm(0, 1) T(0,) # Prior for the standard deviation of random slopes
+  rho_ext ~ dunif(-1, 1) # Prior for the correlation between random intercepts and slopes
+  
+  sigma_b0_log_ext <- log(sigma_b0_ext)
+  sigma_b1_log_ext <- log(sigma_b1_ext)
+  
+  tau_b0_ext <- pow(sigma_b0_ext, -2)
+  tau_b1_ext <- pow(sigma_b1_ext, -2)
+  tau_b1.b0_ext <- 1 / (1 - pow(rho_ext, 2)) * tau_b1_ext
+  
+  # Priors for random effects
+  for (i in 1:N_subj_ext) {
+    b_ext[i, 1] ~ dnorm(0, tau_b0_ext)
+    b_ext[i, 2] ~ dnorm(mu_b1.b0_ext[i], tau_b1.b0_ext)
+    mu_b1.b0_ext[i] <- sigma_b1_ext * b_ext[i, 1] * rho_ext / sigma_b0_ext
+  }
+  
+  # Linear model
+  for (i in 1:N_obs_ext){
+    mu_ext[i] <- beta_ext[1] + beta_ext[2] * time_ext[i] + b_ext[subj_ext[i], 1] + b_ext[subj_ext[i], 2] * time_ext[i] + beta_age_ext * age_ext[i] + beta_baseline_ext * baseline_ext[i]
+    y_ext[i] ~ dnorm(mu_ext[i], tau_y_ext * W_ext[i]) # Obsrvation model
+  }
+  
+  
+  # Prior for the residual standard deviation
+  sigma_y_ext ~ dnorm(0, 1) T(0,)
+  tau_y_ext <- pow(sigma_y_ext, -2) # Precision for the normal distribution of observations
+  
+### current trial ###
+
+  # Priors for fixed effects
+  beta_age ~ dnorm(0, 2) # Prior for the fixed age effect
+  beta_baseline ~ dnorm(0, 2) # Prior for the fixed baseline measure effect
+  beta_treatment2[1, 1] <- 0
+  beta_treatment2[2, 1] <- 0
+  beta_treatment2[3, 1] <- 0 
+  beta_treatment[1] <- 0
+  rho_1 ~ dunif(-1, 1)
+  rho_1_nex ~ dunif(-1, 1)
+  rho_1_beta ~ dunif(-1, 1)
+
+
+  
+  # Priors for hyperparameters of random effects
+	sigma_b0 ~ dnorm(0, 1) T(0,) # Prior for the standard deviation of random intercepts
+	sigma_b1 ~ dnorm(0, 1) T(0,) # Prior for the standard deviation of random slopes
+	rho ~ dunif(-1, 1) # Prior for the correlation between random intercepts and slopes
+   
+	tau_b0 <- pow(sigma_b0, -2)
+	tau_b1 <- pow(sigma_b1, -2)
+	tau_b1.b0 <- 1 / (1 - pow(rho, 2)) * tau_b1
+  
+  # Priors for random effects
+	for (i in 1:N_subj) {
+		b[i, 1] ~ dnorm(0, tau_b0)
+		b[i, 2] ~ dnorm(mu_b1.b0[i], tau_b1.b0)
+		mu_b1.b0[i] <- sigma_b1 * b[i, 1] * rho / sigma_b0
+	}
+	
+	
+	
+  # Linear model
+  for (i in 1:N_obs){
+    mu[i] <- beta[1] + beta[2] * time[i] + beta_age * age[i] + beta_baseline * baseline[i] + beta_treatment[trt1[i]] * time1[i] + ifelse(stage2[i] == 0, 0, beta_treatment2[trt1[i], trt2[i]] * time2[i]) + b[subj[i], 1] + b[subj[i], 2] * time[i]
+    y[i] ~ dnorm(mu[i], tau_y) # Obsrvation model
+  }
+  
+  
+  # Prior for the residual standard deviation
+  sigma_y ~ dnorm(0, 1) T(0,) # dunif(0, 10) # 
+  tau_y <- pow(sigma_y, -2) # Precision for the normal distribution of observations
+  
+  # MAC for beta0
+  
+  Z ~ dbin(p.exch, 1)
+    
+  # select theta from latent variable
+  beta_ext[1:2] ~ dmnorm.vcov(y_external_mu[Z + 1, 1:2], y_external_tau[Z + 1, 1:2, 1:2])
+      
+  y_external_mu[2, 1:2] <- c(mu_0, mu_1)
+  y_external_mu[1, 1:2] <- c(Prior.nex_0, Prior.nex_1)
+      
+  y_external_tau[2, 1, 1] = pow(tau_0, 2)
+  y_external_tau[2, 1, 2] = tau_0 * tau_1 * rho_1
+  y_external_tau[2, 2, 1] = tau_0 * tau_1 * rho_1
+  y_external_tau[2, 2, 2] = pow(tau_1, 2)
+  
+  y_external_tau[1, 1, 1] = 16
+  y_external_tau[1, 1, 2] = 0 
+  y_external_tau[1, 2, 1] = 0 
+  y_external_tau[1, 2, 2] = 16
+  
+  # beta0 and beta1's prior (MAC + weakly informative)
+  
+  
+  beta[1:2] ~ dmnorm.vcov(beta_mu[Z_current + 1, 1:2], tau_beta[Z_current + 1, 1:2, 1:2])
+  
+  beta_mu[2, 1:2] = c(mu_0, mu_1)
+  beta_mu[1, 1:2] = c(mu_nex_0, mu_nex_1)
+  
+  tau_beta[2, 1, 1] = pow(tau_0_beta, 2)
+  tau_beta[2, 1, 2] = tau_0_beta * tau_1_beta * rho_1_beta
+  tau_beta[2, 2, 1] = tau_0_beta * tau_1_beta * rho_1_beta
+  tau_beta[2, 2, 2] = pow(tau_1_beta, 2)
+    
+  tau_beta[1, 1, 1] = 16
+  tau_beta[1, 1, 2] = 0 
+  tau_beta[1, 2, 1] = 0 
+  tau_beta[1, 2, 2] = 16
+
+  Z_current ~ dbern(p.exch)
+    
+ 
+  # Priors (MAC part)
+  
+  prec.mu_0 <- pow(Prior.mu_0[2], -2)
+  mu_0 ~ dnorm(Prior.mu_0[1], prec.mu_0)
+  log_tau_0 ~ dnorm(log(Prior.tau_0), log(8)/1.96) #
+  tau_0 <- exp(log_tau_0)
+  log_tau_0_beta ~ dnorm(log(Prior.tau_0), log(8)/1.96) #
+  tau_0_beta <- exp(log_tau_0_beta)
+  
+  prec.mu_1 <- pow(Prior.mu_1[2], -2)
+  mu_1 ~ dnorm(Prior.mu_1[1], prec.mu_1)
+  log_tau_1 ~ dnorm(log(Prior.tau_1), log(8)/1.96) #
+  tau_1 <- exp(log_tau_1)
+  log_tau_1_beta ~ dnorm(log(Prior.tau_1), log(8)/1.96) #
+  tau_1_beta <- exp(log_tau_1_beta)
+
+  
+  # Exchangeability of treatment effect between treatment stages
+  for (i in 2:3){
+    prec.mu_new[i] <- pow(5, -2)
+    mu_new[i] ~ dnorm(0, prec.mu_new[i])
+    log_tau_new[i] ~ dnorm(log(Prior.tau_treatment), log(8)/1.96) # #
+    tau_new[i] <- exp(log_tau_new[i])
+    beta_treatment[i] ~ dnorm(mu_new[i], pow(tau_new[i], -2)) 
+    
+    for (j in 1:3){	
+      log_tau_new2[j, i] ~ dnorm(log(Prior.tau_treatment), log(8)/1.96) # 
+      tau_new2[j, i] <- exp(log_tau_new2[j, i])
+      beta_treatment2[j, i] ~ dnorm(mu_new[i], pow(tau_new2[j, i], -2)) 
+      #beta_treatment2[j, i] ~ dnorm(mu_new[i], pow(tau_new[i], -2)) 
+    }
+  }
+  
+  PL = beta_treatment[2] * 4
+  PH = beta_treatment[3] * 4
+}
+
