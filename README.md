@@ -15,5 +15,7 @@ Six files are provided:
 To conduct simultion studies yourself, please put all files under one folder, set working directory to that folder, and run `current_data_simulation.R` and `external_data_simulation.R` to generate simulated datasets. Then, run `test.R` to generate rMSE, bias, credible interval width, and coverage rate of different simulation scenarios.
 
 Contact: sidiwang@umich.edu
+
 Reference: 
+
 Sidi Wang, Kelley M. Kidwell, Satrajit Roychoudhury, Dynamic Enrichment of Bayesian Small-Sample, Sequential, Multiple Assignment Randomized Trial Design Using Natural History Data: A Case Study from Duchenne Muscular Dystrophy, Biometrics, Volume 79, Issue 4, December 2023, Pages 3612–3623, https://doi-org.proxy.lib.umich.edu/10.1111/biom.13887 
