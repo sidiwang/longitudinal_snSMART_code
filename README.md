@@ -18,4 +18,4 @@ Contact: sidiwang@umich.edu
 
 Reference: 
 
-Sidi Wang, Kelley M. Kidwell, Satrajit Roychoudhury, Dynamic Enrichment of Bayesian Small-Sample, Sequential, Multiple Assignment Randomized Trial Design Using Natural History Data: A Case Study from Duchenne Muscular Dystrophy, Biometrics, Volume 79, Issue 4, December 2023, Pages 3612–3623, https://doi-org.proxy.lib.umich.edu/10.1111/biom.13887 
+Wang S, Kidwell KM, Roychoudhury S. Dynamic enrichment of Bayesian small-sample, sequential, multiple assignment randomized trial design using natural history data: a case study from Duchenne muscular dystrophy. Biometrics. 2023 Dec;79(4):3612-23.
