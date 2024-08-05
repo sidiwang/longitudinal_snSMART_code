@@ -7,12 +7,12 @@ Our proposed approach represents an enhancement of the robust MAC-snSMART method
 Six files are provided:
 - `external_data_simulation.R` - simulate sample external control data;
 - `current_data_simulation.R` - simulate sample current trial data;
-- `BLPM_test.bug` - `JAGS` code of our prposed BLPM method;
+- `BLPM_test.bug` - `JAGS` code of our proposed BLPM method;
 - `BLPM_robust_test.bug` - `JAGS` code of our proposed robust BLPM method;
 - `JointStageBayes_mixture.bug` - `JAGS` code of the Bayesian joint stage model proposed by [Fang Fang](https://www.tandfonline.com/doi/abs/10.1080/19466315.2022.2118162);
 - `test.R` - the original `R` code used to generate the simulation studies results presented in the `Result` section of our paper.
 
-To conduct simultion studies yourself, please put all files under one folder, set working directory to that folder, and run `current_data_simulation.R` and `external_data_simulation.R` to generate simulated datasets. Then, run `test.R` to generate rMSE, bias, credible interval width, and coverage rate of different simulation scenarios.
+To conduct simulation studies yourself, please put all files under one folder, set the working directory to that folder, and run `current_data_simulation.R` and `external_data_simulation.R` to generate simulated datasets. Then, run `test.R` to generate rMSE, bias, credible interval width, and coverage rate of different simulation scenarios.
 
 Contact: sidiwang@umich.edu
 
